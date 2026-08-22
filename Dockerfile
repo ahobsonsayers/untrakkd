@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Builder Image
-FROM python:3.12-alpine AS builder
+FROM python:3.12-slim AS builder
 
 ENV UV_PYTHON_DOWNLOADS=0
 
@@ -9,10 +9,10 @@ WORKDIR /app
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
+COPY pyproject.toml uv.lock README.md ./
+
 # Install dependencies
-RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=cache,target=/root/.cache/uv \
+RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-install-project --no-editable
 
 # Install project
@@ -21,14 +21,14 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-editable
 
 # Distribution Image
-FROM python:3.12-alpine
+FROM python:3.12-slim
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-RUN apk add --no-cache ca-certificates
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/.venv /app/.venv
 
