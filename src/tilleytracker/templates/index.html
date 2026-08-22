@@ -7,24 +7,39 @@
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <style>
-    body { margin: 0; font-family: system-ui, sans-serif; display: flex; height: 100vh; }
+    html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; background: #111; color: #eee; }
+    body { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
     #map { flex: 1; height: 100%; }
-    #sidebar { width: 340px; overflow-y: auto; padding: 16px; box-sizing: border-box; background: #111; color: #eee; }
+    #sidebar { width: 340px; display: flex; flex-direction: column; background: #111; }
+    #header { padding: 16px 16px 8px; box-sizing: border-box; flex: none; }
     h1 { font-size: 1.2rem; margin: 0 0 4px; }
-    h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .08em; color: #999; margin: 16px 0 8px; }
-    .event { border-bottom: 1px solid #2a2a2a; padding: 8px 0; cursor: pointer; }
+    #count { font-size: 0.8rem; color: #aaa; margin: 0; }
+    h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .08em; color: #999; margin: 12px 0 0; }
+    #timeline { flex: 1; overflow-y: auto; padding: 0 16px 16px; -webkit-overflow-scrolling: touch; scroll-behavior: auto; }
+    .event { border-left: 3px solid transparent; border-bottom: 1px solid #2a2a2a; padding: 10px 8px; cursor: pointer; transition: background .15s, border-color .15s; }
     .event:hover { background: #1c1c1c; }
+    .event.active { background: #1c1c1c; border-left-color: #e65100; }
     .beer { font-weight: 600; }
     .meta { font-size: 0.8rem; color: #aaa; }
-    @media (max-width: 700px) { #sidebar { width: 260px; } }
+    .badge { display: inline-block; margin-top: 6px; font-size: 0.7rem; color: #e65100; }
+    /* Mobile: map on top, timeline scrolls below it */
+    @media (max-width: 700px) {
+      body { flex-direction: column; }
+      #map { height: 45%; flex: none; }
+      #sidebar { width: 100%; height: 55%; }
+      #header { padding: 10px 12px 6px; }
+      #timeline { padding: 0 12px 12px; }
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <div id="sidebar">
-    <h1>🍺 ***'s beer world tour</h1>
-    <p id="count" class="meta"></p>
-    <h2>Timeline</h2>
+    <div id="header">
+      <h1>🍺 ***'s beer world tour</h1>
+      <p id="count"></p>
+      <h2>Timeline</h2>
+    </div>
     <div id="timeline"></div>
   </div>
   <script>
@@ -73,19 +88,61 @@
     // Timeline
     const tl = document.getElementById('timeline');
     document.getElementById('count').textContent = `${EVENTS.length} checkins across ${venues.size} places`;
+    const items = [];
     for (const e of sorted) {
       const d = new Date(e.date);
       const div = document.createElement('div');
       div.className = 'event';
+      const place = e.venue || (e.city ? e.city : 'Somewhere');
       div.innerHTML = `<div class="beer">${e.beer}</div>
         <div class="brew">by ${e.brewery}</div>
         <div class="brew">${e.venue || '—'}</div>
-        <div class="meta">${d.toLocaleDateString()} ${e.city || ''}</div>`;
+        <div class="meta">${d.toLocaleDateString()} ${e.city || ''}</div>
+        ${e.lat != null && e.lng != null ? `<span class="badge">📍 ${place}</span>` : ''}`;
       if (e.lat != null && e.lng != null) {
-        div.onclick = () => map.flyTo({ center: [e.lng, e.lat], zoom: 10 });
+        div.onclick = () => flyToVenue(e, div);
       }
+      items.push({ div, e });
       tl.appendChild(div);
     }
+
+    // Shared popup
+    let popup = null;
+    function flyToVenue(e, el) {
+      map.flyTo({ center: [e.lng, e.lat], zoom: 10 });
+      setActive(el);
+      if (popup) popup.remove();
+      popup = new maplibregl.Popup({ closeButton: false, offset: 12 })
+        .setLngLat([e.lng, e.lat])
+        .setHTML(`<strong>${e.venue || e.city || 'Somewhere'}</strong><br>${e.beer} by ${e.brewery}<br>${e.date}`)
+        .addTo(map);
+    }
+
+    let activeEl = null;
+    function setActive(el) {
+      if (activeEl) activeEl.classList.remove('active');
+      activeEl = el;
+      if (el) el.classList.add('active');
+    }
+
+    // Scrubbing: as you scroll the timeline, follow him place to place.
+    let lastKey = null;
+    tl.addEventListener('scroll', () => {
+      const mid = tl.scrollTop + tl.clientHeight * 0.4;
+      let current = null;
+      for (const item of items) {
+        if (item.div.offsetTop <= mid) current = item;
+        else break;
+      }
+      if (current) {
+        const key = current.e.lat + ',' + current.e.lng;
+        setActive(current.div);
+        if (key !== lastKey) {
+          lastKey = key;
+          map.flyTo({ center: [current.e.lng, current.e.lat], zoom: 9 });
+        }
+      }
+    });
   </script>
 </body>
 </html>
