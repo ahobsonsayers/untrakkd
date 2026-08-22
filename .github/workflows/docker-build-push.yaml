@@ -1,0 +1,16 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches: [main]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Push Image
+    uses: ahobsonsayers/github-workflows/.github/workflows/docker-build-push.yaml@main
+    secrets: inherit
+    with:
+      image-name: arranhs/***-tracker
+      image-tags: latest

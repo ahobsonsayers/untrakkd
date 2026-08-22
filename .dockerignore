@@ -1,7 +1,11 @@
-.git
+# Ignore certain directories
+.git/
+.github/
+data/
+
+# Ignore certain files
 .gitignore
-.github
-data
 *.md
-Taskfile.yaml
 compose.yaml
+Taskfile.yml
+Taskfile.yaml
