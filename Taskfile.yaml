@@ -1,0 +1,40 @@
+# Docs: https://taskfile.dev/#/usage
+version: "3"
+
+tasks:
+  install:
+    cmds:
+      - uv sync
+
+  format:
+    cmds:
+      - uv run ruff format .
+
+  lint:
+    cmds:
+      - uv run ruff check --fix .
+      - uv run ty check .
+
+  test:
+    cmds:
+      - uv run pytest .
+
+  build:
+    cmds:
+      - uv build
+
+  build:docker:
+    cmds:
+      - docker build . --tag pylerplate
+
+  run:
+    cmds:
+      - uv run pylerplate {{.CLI_ARGS}}
+
+  run:server:
+    cmds:
+      - uv run pylerplate serve {{.CLI_ARGS}}
+
+  run:docker:
+    cmds:
+      - docker compose up --build

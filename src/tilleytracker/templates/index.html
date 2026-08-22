@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>***'s beer world tour</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; display: flex; height: 100vh; }
+    #map { flex: 1; height: 100%; }
+    #sidebar { width: 340px; overflow-y: auto; padding: 16px; box-sizing: border-box; background: #111; color: #eee; }
+    h1 { font-size: 1.2rem; margin: 0 0 4px; }
+    h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .08em; color: #999; margin: 16px 0 8px; }
+    .event { border-bottom: 1px solid #2a2a2a; padding: 8px 0; cursor: pointer; }
+    .event:hover { background: #1c1c1c; }
+    .beer { font-weight: 600; }
+    .meta { font-size: 0.8rem; color: #aaa; }
+    @media (max-width: 700px) { #sidebar { width: 260px; } }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="sidebar">
+    <h1>🍺 ***'s beer world tour</h1>
+    <p id="count" class="meta"></p>
+    <h2>Timeline</h2>
+    <div id="timeline"></div>
+  </div>
+  <script>
+    const EVENTS = {{ events | safe }};
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: 'https://demotiles.maplibre.org/style.json',
+      center: [0, 30],
+      zoom: 1.5
+    });
+
+    // Unique venues with coords
+    const venues = new Map();
+    for (const e of EVENTS) {
+      if (e.lat != null && e.lng != null) {
+        const key = e.venue + '|' + e.lat + ',' + e.lng;
+        if (!venues.has(key)) venues.set(key, e);
+      }
+    }
+
+    const sorted = [...EVENTS].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    map.on('load', () => {
+      const features = [...venues.values()].map(e => ({
+        type: 'Feature',
+        properties: { venue: e.venue || 'Unknown', beer: e.beer, brewery: e.brewery, city: e.city, date: e.date },
+        geometry: { type: 'Point', coordinates: [e.lng, e.lat] }
+      }));
+      map.addSource('venues', { type: 'geojson', data: { type: 'FeatureCollection', features } });
+      map.addLayer({
+        id: 'pins', type: 'circle', source: 'venues',
+        paint: { 'circle-radius': 7, 'circle-color': '#e65100', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 }
+      });
+    });
+
+    map.on('click', 'pins', (e) => {
+      const p = e.features[0].properties;
+      new maplibregl.Popup().setLngLat(e.lngLat)
+        .setHTML(`<strong>${p.venue}</strong><br>${p.beer} by ${p.brewery}<br>${p.city ? p.city + '<br>' : ''}${p.date}`)
+        .addTo(map);
+    });
+
+    map.on('mouseenter', 'pins', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'pins', () => map.getCanvas().style.cursor = '');
+
+    // Timeline
+    const tl = document.getElementById('timeline');
+    document.getElementById('count').textContent = `${EVENTS.length} checkins across ${venues.size} places`;
+    for (const e of sorted) {
+      const d = new Date(e.date);
+      const div = document.createElement('div');
+      div.className = 'event';
+      div.innerHTML = `<div class="beer">${e.beer}</div>
+        <div class="brew">by ${e.brewery}</div>
+        <div class="brew">${e.venue || '—'}</div>
+        <div class="meta">${d.toLocaleDateString()} ${e.city || ''}</div>`;
+      if (e.lat != null && e.lng != null) {
+        div.onclick = () => map.flyTo({ center: [e.lng, e.lat], zoom: 10 });
+      }
+      tl.appendChild(div);
+    }
+  </script>
+</body>
+</html>
