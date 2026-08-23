@@ -39,6 +39,8 @@ task run:server
 
 Then open http://localhost:8000.
 
+On startup the server runs a fetch automatically, then re-fetches every hour. Set `***_FETCH_INTERVAL` (seconds) to override the interval.
+
 ## Docker
 
 ```bash

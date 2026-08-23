@@ -1,12 +1,38 @@
 import json
 import os
+import threading
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
 
+from .scraper import main as scrape
+
+_FETCH_INTERVAL = int(os.environ.get("***_FETCH_INTERVAL", "3600"))
+
 app = FastAPI(title="***tracker")
+
+
+def _run_fetch() -> None:
+    try:
+        scrape()
+    except Exception:  # noqa: BLE001, S110 - background fetch must not kill the server
+        pass
+
+
+def _schedule_fetch() -> None:
+    _run_fetch()
+    timer = threading.Timer(_FETCH_INTERVAL, _schedule_fetch)
+    timer.daemon = True
+    timer.start()
+
+
+@app.on_event("startup")
+def _start_fetch_loop() -> None:
+    thread = threading.Thread(target=_schedule_fetch, daemon=True)
+    thread.start()
+
 
 _EVENTS_PATH = os.environ.get("***_EVENTS", os.path.join("data", "events.json"))
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
