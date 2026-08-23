@@ -25,19 +25,19 @@ tasks:
 
   run:
     cmds:
-      - uv run pylerplate {{.CLI_ARGS}}
+      - uv run ***tracker {{.CLI_ARGS}}
 
   run:fetch:
     cmds:
-      - uv run pylerplate fetch
+      - uv run ***tracker fetch
 
   run:server:
     cmds:
-      - uv run pylerplate serve {{.CLI_ARGS}}
+      - uv run ***tracker serve {{.CLI_ARGS}}
 
   docker:build:
     cmds:
-      - docker build . --tag pylerplate
+      - docker build . --tag ***tracker
 
   docker:run:
     cmds:
