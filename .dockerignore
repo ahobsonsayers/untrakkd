@@ -1,11 +1,22 @@
 # Ignore certain directories
-.git/
 .github/
+.git/
+.venv/
+__pycache__/
 data/
 
 # Ignore certain files
+.dockerignore
+.env
+.envrc
 .gitignore
+.secrets
+
+*.py[codz]
+*.secrets
 *.md
+!README.md
+
 compose.yaml
-Taskfile.yml
+Dockerfile
 Taskfile.yaml

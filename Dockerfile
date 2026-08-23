@@ -9,14 +9,13 @@ WORKDIR /app
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-COPY pyproject.toml uv.lock README.md ./
-
 # Install dependencies
+COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-install-project --no-editable
 
 # Install project
-COPY src src
+COPY . .
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-editable
 
