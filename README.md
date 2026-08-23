@@ -1,6 +1,6 @@
 # ***tracker
 
-A silly toy app that maps where *** ([Untappd: ***](https://untappd.com/user/***)) has drunk beer around the world, plus a world timeline of every check-in. Built with [FastAPI](https://fastapi.tiangolo.com/), [Scrapling](https://github.com/D4Vinci/Scrapling) (light HTTP scraping), and [MapLibre GL JS](https://maplibre.org/).
+A silly toy app that maps where *** has drunk beer around the world, plus a world timeline of every check-in. Built with [FastAPI](https://fastapi.tiangolo.com/), [Scrapling](https://github.com/D4Vinci/Scrapling) (light HTTP scraping), and [MapLibre GL JS](https://maplibre.org/).
 
 Not production-ready — a toy, built fast.
 
