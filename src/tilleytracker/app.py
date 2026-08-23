@@ -1,6 +1,8 @@
 import json
+import logging
 import os
 import threading
+import traceback
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
@@ -9,16 +11,19 @@ from starlette.requests import Request
 
 from .scraper import main as scrape
 
+log = logging.getLogger("***tracker")
+
 _FETCH_INTERVAL = int(os.environ.get("***_FETCH_INTERVAL", "3600"))
 
 app = FastAPI(title="***tracker")
 
 
 def _run_fetch() -> None:
+    log.info("fetch starting")
     try:
         scrape()
-    except Exception:  # noqa: BLE001, S110 - background fetch must not kill the server
-        pass
+    except Exception:  # noqa: BLE001 - background fetch must not kill the server
+        log.error("fetch failed:\n%s", traceback.format_exc())
 
 
 def _schedule_fetch() -> None:
