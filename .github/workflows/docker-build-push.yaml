@@ -1,4 +1,4 @@
-name: Docker Build and Push
+name: Build & Push Docker Image
 
 on:
   push:
@@ -6,11 +6,16 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build:
-    name: Build and Push Image
+    name: Build & Push
     uses: ahobsonsayers/github-workflows/.github/workflows/docker-build-push.yaml@main
     secrets: inherit
     with:
-      image-name: arranhs/***-tracker
+      image-registry: ghcr.io
+      image-name: ahobsonsayers/***-tracker
       image-tags: latest
