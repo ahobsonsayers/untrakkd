@@ -213,7 +213,7 @@
     for (const e of sorted) {
       const div = document.createElement('div');
       div.className = 'event';
-      const loc = e.venue ? (e.city ? `${e.city} (${e.venue})` : e.venue) : (e.city || 'Somewhere');
+      const loc = e.city || 'Somewhere';
       div.innerHTML = `<div class="meta">${formatDate(e.date)}</div>
         <div class="loc"><span class="key">Location</span>${loc}</div>
         <div class="beer"><span class="key">Drink</span>${e.beer}</div>
