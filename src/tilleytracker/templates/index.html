@@ -25,6 +25,16 @@
     .stars { color: #e65100; letter-spacing: 1px; font-size: 0.85rem; }
     .stars .empty { color: #444; }
     .rating-num { font-size: 0.75rem; color: #aaa; }
+    /* Dark popups */
+    .maplibregl-popup-content { background: #1c1c1c; color: #eee; border: 1px solid #3a3a3a; }
+    .maplibregl-popup-tip { border-top-color: #1c1c1c; border-bottom-color: #1c1c1c; }
+    .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: #1c1c1c; }
+    .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: #1c1c1c; }
+    .maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: #1c1c1c; }
+    .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: #1c1c1c; }
+    .maplibregl-popup-content strong { color: #e65100; }
+    .maplibregl-popup-content .stars { color: #e65100; }
+    .maplibregl-popup-content .rating-num { color: #aaa; }
     /* Mobile: map on top, timeline scrolls below it */
     @media (max-width: 700px) {
       body { flex-direction: column; }
@@ -64,7 +74,13 @@
 
     const map = new maplibregl.Map({
       container: 'map',
-      style: 'https://demotiles.maplibre.org/style.json',
+      style: {
+        version: 8,
+        sources: {
+          osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, attribution: '© OpenStreetMap contributors' }
+        },
+        layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
+      },
       center: [0, 30],
       zoom: 1.5
     });
@@ -76,10 +92,42 @@
     map.on('load', () => {
       const features = withCoords.map(e => ({
         type: 'Feature',
-        properties: { venue: e.venue || 'Unknown', beer: e.beer, brewery: e.brewery, city: e.city, date: e.date },
+        properties: { venue: e.venue || 'Unknown', beer: e.beer, brewery: e.brewery, city: e.city, date: e.date, rating: e.rating },
         geometry: { type: 'Point', coordinates: [e.lng, e.lat] }
       }));
       map.addSource('checkins', { type: 'geojson', data: { type: 'FeatureCollection', features } });
+
+      // Dotted lines between consecutive checkins
+      const lineFeatures = [];
+      for (let i = 1; i < withCoords.length; i++) {
+        const a = withCoords[i - 1], b = withCoords[i];
+        lineFeatures.push({
+          type: 'Feature',
+          properties: {},
+          geometry: { type: 'LineString', coordinates: [[a.lng, a.lat], [b.lng, b.lat]] }
+        });
+      }
+      map.addSource('routes', { type: 'geojson', data: { type: 'FeatureCollection', features: lineFeatures } });
+      map.addLayer({
+        id: 'route-line', type: 'line', source: 'routes',
+        layout: { 'line-cap': 'round' },
+        paint: { 'line-color': '#e65100', 'line-width': 2, 'line-dasharray': [0, 4] }
+      });
+
+      // Chevron at midpoint of each segment
+      const chevronFeatures = lineFeatures.map(f => {
+        const [a, b] = f.geometry.coordinates;
+        const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+        const bearing = Math.atan2(b[0] - a[0], b[1] - a[1]) * 180 / Math.PI;
+        return { type: 'Feature', properties: { bearing: bearing - 90 }, geometry: { type: 'Point', coordinates: [mx, my] } };
+      });
+      map.addSource('chevrons', { type: 'geojson', data: { type: 'FeatureCollection', features: chevronFeatures } });
+      map.addLayer({
+        id: 'chevrons', type: 'symbol', source: 'chevrons',
+        layout: { 'text-field': '\u27A4', 'text-size': 14, 'text-rotate': ['get', 'bearing'], 'text-rotate-alignment': 'map', 'text-allow-overlap': true },
+        paint: { 'text-color': '#e65100' }
+      });
+
       map.addLayer({
         id: 'pins', type: 'circle', source: 'checkins',
         paint: { 'circle-radius': 7, 'circle-color': '#e65100', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 }
