@@ -154,12 +154,12 @@
       const div = document.createElement('div');
       div.className = 'event';
       const place = e.venue || (e.city ? e.city : 'Somewhere');
-      div.innerHTML = `<div class="beer">${e.beer}</div>
-        <div class="brew">by ${e.brewery}</div>
-        ${renderStars(e.rating)}
-        <div class="brew">${e.venue || '—'}</div>
-        <div class="meta">${d.toLocaleDateString()} ${e.city || ''}</div>
-        ${e.lat != null && e.lng != null ? `<span class="badge">\ud83d\udccd ${place}</span>` : ''}`;
+      const loc = e.venue ? (e.city ? `${e.city} (${e.venue})` : e.venue) : (e.city || 'Somewhere');
+      div.innerHTML = `<div class="brew">${loc}</div>
+        <div class="meta">${d.toLocaleDateString()}</div>
+        <div class="beer">${e.beer}</div>
+        <div class="brew">${e.brewery}</div>
+        ${renderStars(e.rating)}`;
       if (e.lat != null && e.lng != null) {
         div.onclick = () => flyToVenue(e, div);
       }
