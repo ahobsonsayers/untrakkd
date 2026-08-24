@@ -146,9 +146,9 @@
     })();
 
     map.on('load', () => {
-      const features = withCoords.map(e => ({
+      const features = withCoords.map((e, i) => ({
         type: 'Feature',
-        properties: { venue: e.venue || 'Unknown', beer: e.beer, brewery: e.brewery, city: e.city, date: e.date, rating: e.rating },
+        properties: { idx: i, venue: e.venue || 'Unknown', beer: e.beer, brewery: e.brewery, city: e.city, date: e.date, rating: e.rating },
         geometry: { type: 'Point', coordinates: [e.lng, e.lat] }
       }));
       map.addSource('checkins', { type: 'geojson', data: { type: 'FeatureCollection', features } });
@@ -193,6 +193,11 @@
         id: 'pins', type: 'circle', source: 'checkins',
         paint: { 'circle-radius': 6, 'circle-color': '#f59000', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 }
       });
+      map.addLayer({
+        id: 'active-pin', type: 'circle', source: 'checkins',
+        filter: ['==', ['get', 'idx'], -1],
+        paint: { 'circle-radius': 10, 'circle-color': '#22c55e', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2.5, 'circle-blur': 0.2 }
+      });
     });
 
     map.on('click', 'pins', (e) => {
@@ -231,6 +236,7 @@
     function flyToVenue(e, el) {
       map.flyTo({ center: [e.lng, e.lat], zoom: 10, speed: 1.8, curve: 1.2, duration: 2500 });
       setActive(el);
+      highlightPin(e);
       if (popup) popup.remove();
       const r = e.rating != null && e.rating > 0 ? `<br>${renderStars(e.rating)}` : '';
       popup = new maplibregl.Popup({ closeButton: false, offset: 14 })
@@ -240,10 +246,20 @@
     }
 
     let activeEl = null;
+    let activeIdx = -1;
     function setActive(el) {
       if (activeEl) activeEl.classList.remove('active');
       activeEl = el;
       if (el) el.classList.add('active');
+    }
+    function highlightPin(e) {
+      const idx = withCoords.indexOf(e);
+      if (idx === activeIdx) return;
+      activeIdx = idx;
+      if (map.getLayer('active-pin')) {
+        map.setFilter('active-pin', ['==', ['get', 'idx'], idx]);
+        if (idx >= 0) map.moveLayer('active-pin', null);
+      }
     }
 
     // Scrubbing: as you scroll the timeline, follow him place to place.
@@ -258,6 +274,7 @@
       if (current) {
         const key = current.e.lat + ',' + current.e.lng;
         setActive(current.div);
+        highlightPin(current.e);
         if (key !== lastKey && current.e.lat != null && current.e.lng != null) {
           lastKey = key;
           map.flyTo({ center: [current.e.lng, current.e.lat], zoom: 9, speed: 1.8, curve: 1.2, duration: 2500 });
