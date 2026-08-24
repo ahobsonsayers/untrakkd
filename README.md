@@ -1,6 +1,8 @@
 # untrakkd
 
-Map any Untappd user's check-in history on an interactive map with a timeline sidebar. Pins show what they drank, where, and when — with dotted route lines connecting consecutive check-ins, star ratings, and live stats.
+Show any Untappd user's check-in history on an interactive map with a timeline sidebar. Pins show what they drank, where, and when — with dotted route lines connecting consecutive check-ins, star ratings, and live stats.
+
+This started as a joke when I told one of my friends I'd be able to track where he was in the world based on his Untappd check-ins. He checks in a LOT 😂
 
 Built with [FastAPI](https://fastapi.tiangolo.com/), [Scrapling](https://github.com/D4Vinci/Scrapling), and [MapLibre GL JS](https://maplibre.org/).
 
@@ -21,41 +23,18 @@ Built with [FastAPI](https://fastapi.tiangolo.com/), [Scrapling](https://github.
 4. Everything is written to `data/events.json`.
 5. `untrakkd serve` runs a FastAPI server that renders the data as MapLibre pins plus a timeline sidebar.
 
-## Setup
+## Getting your Untappd cookie
 
-```bash
-task install
-```
+You need a cookie from a logged-in Untappd session — the scraper uses it to access the check-in feed (which requires authentication).
 
-You need:
+1. Open [untappd.com](https://untappd.com) and log in.
+2. Open your browser's DevTools (F12) → **Network** tab.
+3. Refresh the page, click any request to `untappd.com`, and find the **Request Headers**.
+4. Copy the full value of the `Cookie:` header. It'll be a long string of `key=value; key=value; ...` pairs.
 
-1. A logged-in Untappd cookie. Open untappd.com in your browser, copy the `Cookie` header value.
-2. The Untappd username (the slug in the profile URL, e.g. `someuser` for `untappd.com/user/someuser`).
+You also need the target user's username slug — the part after `/user/` in their profile URL (e.g. `someuser` for `untappd.com/user/someuser`).
 
-```bash
-export UNTAPPD_COOKIE="..."
-export UNTAPPD_PROFILE="username"
-```
-
-## Fetch the data
-
-```bash
-task run -- fetch
-```
-
-This writes `data/events.json`, `data/venue_cache.json`, and `data/profile.json`.
-
-## Run the server
-
-```bash
-task run:server
-```
-
-Then open http://localhost:8000.
-
-On startup the server runs a fetch automatically, then re-fetches every hour. Set `UNTRAKKD_FETCH_INTERVAL` (seconds) to override the interval.
-
-## Docker
+## Run with Docker (recommended)
 
 ```bash
 export UNTAPPD_COOKIE="..."
@@ -63,7 +42,20 @@ export UNTAPPD_PROFILE="username"
 task run:docker
 ```
 
-Data is persisted to `./data` via a volume. Run `docker compose exec untrakkd untrakkd fetch` to refresh it manually.
+Then open http://localhost:8000.
+
+Data is persisted to `./data` via a volume. The server fetches on startup and every hour. Run `docker compose exec untrakkd untrakkd fetch` to refresh manually.
+
+## Run locally
+
+```bash
+task install
+export UNTAPPD_COOKIE="..."
+export UNTAPPD_PROFILE="username"
+task run:server
+```
+
+Then open http://localhost:8000. The server fetches on startup and every hour.
 
 ## Environment variables
 

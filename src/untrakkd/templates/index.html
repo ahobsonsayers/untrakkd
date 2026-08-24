@@ -279,7 +279,7 @@
         highlightPin(current.e);
         if (key !== lastKey && current.e.lat != null && current.e.lng != null) {
           lastKey = key;
-          map.flyTo({ center: [current.e.lng, current.e.lat], zoom: 18, speed: 1.8, curve: 1.2, duration: 2500 });
+          map.flyTo({ center: [current.e.lng, current.e.lat], zoom: 13, speed: 1.8, curve: 1.2, duration: 2500 });
         }
       }
     });
