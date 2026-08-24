@@ -204,6 +204,15 @@
 
     map.on('click', 'pins', (e) => {
       const p = e.features[0].properties;
+      const ev = withCoords[Number(p.idx)];
+      const item = items.find(it => it.e === ev);
+      if (item) {
+        setActive(item.div);
+        highlightPin(ev);
+        suppressScrollFly = true;
+        item.div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => { suppressScrollFly = false; lastKey = ev.lat + ',' + ev.lng; }, 800);
+      }
       const r = p.rating != null && p.rating > 0 ? `<br>${renderStars(parseFloat(p.rating))}` : '';
       new maplibregl.Popup({ offset: 14 }).setLngLat(e.lngLat)
         .setHTML(`<strong>${p.venue}</strong><br>${p.beer} by ${p.brewery}${r}<br>${p.city ? p.city + '<br>' : ''}${formatDate(p.date)}`)
@@ -266,6 +275,7 @@
 
     // Scrubbing: as you scroll the timeline, follow him place to place.
     let lastKey = null;
+    let suppressScrollFly = false;
     tl.addEventListener('scroll', () => {
       const mid = tl.scrollTop + tl.clientHeight * 0.4;
       let current = null;
@@ -277,7 +287,7 @@
         const key = current.e.lat + ',' + current.e.lng;
         setActive(current.div);
         highlightPin(current.e);
-        if (key !== lastKey && current.e.lat != null && current.e.lng != null) {
+        if (key !== lastKey && current.e.lat != null && current.e.lng != null && !suppressScrollFly) {
           lastKey = key;
           map.flyTo({ center: [current.e.lng, current.e.lat], zoom: 13, speed: 1.8, curve: 1.2, duration: 2500 });
         }
