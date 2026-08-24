@@ -7,43 +7,62 @@
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <style>
-    html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; background: #111; color: #eee; }
+    :root {
+      --bg: #0d0e12;
+      --panel: #15171d;
+      --card: #1a1d26;
+      --card-hover: #21252f;
+      --border: #2a2e3a;
+      --accent: #f59000;
+      --accent-glow: rgba(245, 144, 0, 0.35);
+      --accent-soft: rgba(245, 144, 0, 0.12);
+      --text: #e8e8ec;
+      --text-dim: #8b8e9a;
+      --text-mute: #5c5f6b;
+    }
+    html, body { margin: 0; height: 100%; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
     body { display: flex; height: 100vh; height: 100dvh; overflow: hidden; }
     #map { flex: 1; height: 100%; }
-    #sidebar { width: 340px; display: flex; flex-direction: column; background: #111; }
-    #header { padding: 16px 16px 8px; box-sizing: border-box; flex: none; }
-    h1 { font-size: 1.2rem; margin: 0 0 4px; }
-    #count { font-size: 0.8rem; color: #aaa; margin: 0; }
-    h2 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: .08em; color: #999; margin: 12px 0 0; }
-    #timeline { flex: 1; overflow-y: auto; padding: 0 16px 16px; -webkit-overflow-scrolling: touch; scroll-behavior: auto; }
-    .event { border-left: 3px solid transparent; border-bottom: 1px solid #2a2a2a; padding: 10px 8px; cursor: pointer; transition: background .15s, border-color .15s; }
-    .event:hover { background: #1c1c1c; }
-    .event.active { background: #1c1c1c; border-left-color: #e65100; }
-    .beer { font-weight: 600; }
-    .meta { font-size: 0.8rem; color: #aaa; }
-    .loc { color: #ddd; }
-    .key { color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: .04em; }
-    .badge { display: inline-block; margin-top: 6px; font-size: 0.7rem; color: #e65100; }
-    .stars { color: #e65100; letter-spacing: 1px; font-size: 0.85rem; }
-    .stars .empty { color: #444; }
-    .rating-num { font-size: 0.75rem; color: #aaa; }
+    #sidebar { width: 360px; display: flex; flex-direction: column; background: var(--panel); border-left: 1px solid var(--border); }
+    #header { padding: 20px 20px 12px; box-sizing: border-box; flex: none; background: linear-gradient(180deg, var(--card) 0%, var(--panel) 100%); border-bottom: 1px solid var(--border); }
+    h1 { font-size: 1.15rem; margin: 0 0 6px; font-weight: 700; letter-spacing: -0.01em; }
+    h1 .beer-emoji { filter: drop-shadow(0 0 6px var(--accent-glow)); }
+    #count { font-size: 0.78rem; color: var(--text-dim); margin: 0; }
+    #count .stat-num { color: var(--accent); font-weight: 600; }
+    #timeline { flex: 1; overflow-y: auto; padding: 8px 12px 20px; -webkit-overflow-scrolling: touch; scroll-behavior: auto; }
+    #timeline::-webkit-scrollbar { width: 6px; }
+    #timeline::-webkit-scrollbar-track { background: transparent; }
+    #timeline::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .event { border-left: 3px solid transparent; border-radius: 8px; margin: 4px 0; padding: 12px 14px; cursor: pointer; transition: background .15s, border-color .15s, transform .1s; background: var(--card); }
+    .event:hover { background: var(--card-hover); }
+    .event.active { border-left-color: var(--accent); background: var(--card-hover); box-shadow: inset 0 0 20px var(--accent-soft); }
+    .event:active { transform: scale(0.98); }
+    .meta { font-size: 0.72rem; color: var(--text-mute); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+    .loc { color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+    .beer { font-weight: 600; margin-bottom: 2px; line-height: 1.3; }
+    .brew { color: var(--text-dim); font-size: 0.85rem; line-height: 1.3; }
+    .key { color: var(--text-mute); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; font-weight: 600; }
+    .rating-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+    .stars { color: var(--accent); letter-spacing: 2px; font-size: 0.9rem; text-shadow: 0 0 8px var(--accent-glow); }
+    .stars .empty { color: var(--border); text-shadow: none; }
+    .rating-num { font-size: 0.72rem; color: var(--text-dim); font-weight: 600; }
     /* Dark popups */
-    .maplibregl-popup-content { background: #1c1c1c; color: #eee; border: 1px solid #3a3a3a; }
-    .maplibregl-popup-tip { border-top-color: #1c1c1c; border-bottom-color: #1c1c1c; }
-    .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: #1c1c1c; }
-    .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: #1c1c1c; }
-    .maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: #1c1c1c; }
-    .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: #1c1c1c; }
-    .maplibregl-popup-content strong { color: #e65100; }
-    .maplibregl-popup-content .stars { color: #e65100; }
-    .maplibregl-popup-content .rating-num { color: #aaa; }
-    /* Mobile: map on top, timeline scrolls below it */
+    .maplibregl-popup-content { background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+    .maplibregl-popup-tip { border-top-color: var(--card) !important; border-bottom-color: var(--card) !important; }
+    .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: var(--card) !important; }
+    .maplibregl-popup-anchor-top .maplibregl-popup-tip { border-bottom-color: var(--card) !important; }
+    .maplibregl-popup-anchor-left .maplibregl-popup-tip { border-right-color: var(--card) !important; }
+    .maplibregl-popup-anchor-right .maplibregl-popup-tip { border-left-color: var(--card) !important; }
+    .maplibregl-popup-content strong { color: var(--accent); font-size: 1rem; }
+    .maplibregl-popup-content .stars { color: var(--accent); }
+    .maplibregl-popup-content .rating-num { color: var(--text-dim); }
+    /* Mobile */
     @media (max-width: 700px) {
       body { flex-direction: column; }
       #map { height: 45%; flex: none; }
-      #sidebar { width: 100%; height: 55%; }
-      #header { padding: 10px 12px 6px; }
-      #timeline { padding: 0 12px 12px; }
+      #sidebar { width: 100%; height: 55%; border-left: none; border-top: 1px solid var(--border); }
+      #header { padding: 12px 16px 8px; }
+      #timeline { padding: 6px 10px 16px; }
     }
   </style>
 </head>
@@ -51,9 +70,8 @@
   <div id="map"></div>
   <div id="sidebar">
     <div id="header">
-      <h1>🍺 ***'s beer world tour</h1>
+      <h1><span class="beer-emoji">🍺</span> ***'s beer world tour</h1>
       <p id="count"></p>
-      <h2>Timeline</h2>
     </div>
     <div id="timeline"></div>
   </div>
@@ -63,15 +81,18 @@
     function renderStars(rating) {
       if (rating == null || rating <= 0) return '';
       const full = Math.floor(rating);
-      const half = rating - full >= 0.25 && rating - full < 0.75 ? 1 : 0;
       const roundUp = rating - full >= 0.75 ? 1 : 0;
       const filled = full + roundUp;
-      const total = 5;
       let stars = '';
-      for (let i = 0; i < total; i++) {
+      for (let i = 0; i < 5; i++) {
         stars += i < filled ? '\u2605' : '<span class="empty">\u2606</span>';
       }
-      return `<span class="stars">${stars}</span> <span class="rating-num">${rating.toFixed(2)}</span>`;
+      return `<div class="rating-row"><span class="stars">${stars}</span><span class="rating-num">${rating.toFixed(2)}</span></div>`;
+    }
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     }
 
     const map = new maplibregl.Map({
@@ -79,7 +100,7 @@
       style: {
         version: 8,
         sources: {
-          osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, attribution: '© OpenStreetMap contributors' }
+          osm: { type: 'raster', tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'], tileSize: 256, attribution: '\u00a9 OpenStreetMap contributors' }
         },
         layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
       },
@@ -114,7 +135,7 @@
       map.addLayer({
         id: 'route-line', type: 'line', source: 'routes',
         layout: { 'line-cap': 'round' },
-        paint: { 'line-color': '#e65100', 'line-width': 2, 'line-dasharray': [0, 4] }
+        paint: { 'line-color': '#f59000', 'line-width': 2, 'line-dasharray': [0, 4], 'line-opacity': 0.7 }
       });
 
       // Chevron at midpoint of each segment
@@ -128,20 +149,25 @@
       map.addLayer({
         id: 'chevrons', type: 'symbol', source: 'chevrons',
         layout: { 'text-field': '\u27A4', 'text-size': 14, 'text-rotate': ['get', 'bearing'], 'text-rotate-alignment': 'map', 'text-allow-overlap': true },
-        paint: { 'text-color': '#e65100' }
+        paint: { 'text-color': '#f59000', 'text-opacity': 0.8 }
       });
 
+      // Glow halo under pins
+      map.addLayer({
+        id: 'pin-glow', type: 'circle', source: 'checkins',
+        paint: { 'circle-radius': 16, 'circle-color': '#f59000', 'circle-opacity': 0.15, 'circle-blur': 1 }
+      });
       map.addLayer({
         id: 'pins', type: 'circle', source: 'checkins',
-        paint: { 'circle-radius': 7, 'circle-color': '#e65100', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 }
+        paint: { 'circle-radius': 6, 'circle-color': '#f59000', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 }
       });
     });
 
     map.on('click', 'pins', (e) => {
       const p = e.features[0].properties;
       const r = p.rating != null && p.rating > 0 ? `<br>${renderStars(parseFloat(p.rating))}` : '';
-      new maplibregl.Popup().setLngLat(e.lngLat)
-        .setHTML(`<strong>${p.venue}</strong><br>${p.beer} by ${p.brewery}${r}<br>${p.city ? p.city + '<br>' : ''}${p.date}`)
+      new maplibregl.Popup({ offset: 14 }).setLngLat(e.lngLat)
+        .setHTML(`<strong>${p.venue}</strong><br>${p.beer} by ${p.brewery}${r}<br>${p.city ? p.city + '<br>' : ''}${formatDate(p.date)}`)
         .addTo(map);
     });
 
@@ -150,17 +176,16 @@
 
     // Timeline
     const tl = document.getElementById('timeline');
-    document.getElementById('count').textContent = `${EVENTS.length} checkins across ${places.size} places`;
+    document.getElementById('count').innerHTML = `<span class="stat-num">${EVENTS.length}</span> checkins across <span class="stat-num">${places.size}</span> places`;
     const items = [];
     for (const e of sorted) {
-      const d = new Date(e.date);
       const div = document.createElement('div');
       div.className = 'event';
       const loc = e.venue ? (e.city ? `${e.city} (${e.venue})` : e.venue) : (e.city || 'Somewhere');
-      div.innerHTML = `<div class="meta">${d.toLocaleDateString()}</div>
-        <div class="loc"><span class="key">Location:</span> ${loc}</div>
-        <div class="beer"><span class="key">Drink:</span> ${e.beer}</div>
-        <div class="brew"><span class="key">Venue:</span> ${e.venue || '—'}</div>
+      div.innerHTML = `<div class="meta">${formatDate(e.date)}</div>
+        <div class="loc"><span class="key">Location</span>${loc}</div>
+        <div class="beer"><span class="key">Drink</span>${e.beer}</div>
+        <div class="brew"><span class="key">Venue</span>${e.venue || '\u2014'}</div>
         ${renderStars(e.rating)}`;
       if (e.lat != null && e.lng != null) {
         div.onclick = () => flyToVenue(e, div);
@@ -176,9 +201,9 @@
       setActive(el);
       if (popup) popup.remove();
       const r = e.rating != null && e.rating > 0 ? `<br>${renderStars(e.rating)}` : '';
-      popup = new maplibregl.Popup({ closeButton: false, offset: 12 })
+      popup = new maplibregl.Popup({ closeButton: false, offset: 14 })
         .setLngLat([e.lng, e.lat])
-        .setHTML(`<strong>${e.venue || e.city || 'Somewhere'}</strong><br>${e.beer} by ${e.brewery}${r}<br>${e.date}`)
+        .setHTML(`<strong>${e.venue || e.city || 'Somewhere'}</strong><br>${e.beer} by ${e.brewery}${r}<br>${formatDate(e.date)}`)
         .addTo(map);
     }
 
