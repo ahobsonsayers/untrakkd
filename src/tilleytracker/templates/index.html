@@ -21,6 +21,8 @@
     .event.active { background: #1c1c1c; border-left-color: #e65100; }
     .beer { font-weight: 600; }
     .meta { font-size: 0.8rem; color: #aaa; }
+    .loc { color: #ddd; }
+    .key { color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: .04em; }
     .badge { display: inline-block; margin-top: 6px; font-size: 0.7rem; color: #e65100; }
     .stars { color: #e65100; letter-spacing: 1px; font-size: 0.85rem; }
     .stars .empty { color: #444; }
@@ -85,8 +87,9 @@
       zoom: 1.5
     });
 
-    const sorted = [...EVENTS].sort((a, b) => new Date(a.date) - new Date(b.date));
-    const withCoords = sorted.filter(e => e.lat != null && e.lng != null);
+    const sorted = [...EVENTS].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const chrono = [...sorted].reverse();
+    const withCoords = chrono.filter(e => e.lat != null && e.lng != null);
     const places = new Set(sorted.map(e => e.venue + '|' + e.lat + ',' + e.lng));
 
     map.on('load', () => {
@@ -153,12 +156,11 @@
       const d = new Date(e.date);
       const div = document.createElement('div');
       div.className = 'event';
-      const place = e.venue || (e.city ? e.city : 'Somewhere');
       const loc = e.venue ? (e.city ? `${e.city} (${e.venue})` : e.venue) : (e.city || 'Somewhere');
-      div.innerHTML = `<div class="brew">${loc}</div>
-        <div class="meta">${d.toLocaleDateString()}</div>
-        <div class="beer">${e.beer}</div>
-        <div class="brew">${e.brewery}</div>
+      div.innerHTML = `<div class="meta">${d.toLocaleDateString()}</div>
+        <div class="loc"><span class="key">Location:</span> ${loc}</div>
+        <div class="beer"><span class="key">Drink:</span> ${e.beer}</div>
+        <div class="brew"><span class="key">Venue:</span> ${e.venue || '—'}</div>
         ${renderStars(e.rating)}`;
       if (e.lat != null && e.lng != null) {
         div.onclick = () => flyToVenue(e, div);
