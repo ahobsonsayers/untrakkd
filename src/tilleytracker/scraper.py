@@ -117,7 +117,7 @@ def fetch_checkins(session: _SyncSessionLogic) -> list[Checkin]:
     params: dict[str, str] = {}
     for _ in range(MAX_PAGES):
         page = session.get(f"{UNTAPPD_BASE}/user/{USER}/checkins", params=params)
-        items = page.css("div.item")
+        items = [i for i in page.css("div.item") if i.attrib.get("data-checkin-id")]
         if not items:
             break
         for item in items:
