@@ -3,7 +3,7 @@ import uvicorn
 
 VERSION = "0.1.0"
 
-cli = typer.Typer(name="***tracker", help="***tracker cli", no_args_is_help=True)
+cli = typer.Typer(name="untrakkd", help="untrakkd cli", no_args_is_help=True)
 
 
 @cli.command()
@@ -12,12 +12,12 @@ def serve(
     port: int = typer.Option(8000, help="Port to bind"),
     reload: bool = typer.Option(False, help="Enable auto-reload"),
 ) -> None:
-    uvicorn.run("***tracker.app:app", host=host, port=port, reload=reload)
+    uvicorn.run("untrakkd.app:app", host=host, port=port, reload=reload)
 
 
 @cli.command()
 def fetch() -> None:
-    """Scrape ***'s Untappd history into events.json."""
+    """Scrape Untappd history into events.json."""
     from .scraper import main as scrape
 
     scrape()

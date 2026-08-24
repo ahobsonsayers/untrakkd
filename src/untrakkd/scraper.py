@@ -1,4 +1,4 @@
-"""Scrape ***'s Untappd check-in history into map-ready events."""
+"""Scrape an Untappd user's check-in history into map-ready events."""
 
 from __future__ import annotations
 
@@ -12,17 +12,19 @@ from scrapling.engines.static import _SyncSessionLogic
 from scrapling.fetchers import FetcherSession
 
 UNTAPPD_BASE = "https://untappd.com"
-USER = "***"
+PROFILE = os.environ.get("UNTAPPD_PROFILE", "")
 PER_PAGE = 25
 MAX_PAGES = 50
 
 _NEAR_RE = re.compile(r"near=(-?\d+\.\d+),(-?\d+\.\d+)")
 _TITLE_RE = re.compile(r"<title>(?:.*?) - ([^<]+) - Untappd</title>")
+_NAME_RE = re.compile(r'<h1 class="[^"]*name[^"]*"[^>]*>([^<]+)</h1>')
 
-_DATA_DIR = os.environ.get("***_DATA", "data")
+_DATA_DIR = os.environ.get("UNTRAKKD_DATA", "data")
 os.makedirs(_DATA_DIR, exist_ok=True)
-_CACHE_PATH = os.environ.get("***_CACHE", os.path.join(_DATA_DIR, "venue_cache.json"))
-_EVENTS_PATH = os.environ.get("***_EVENTS", os.path.join(_DATA_DIR, "events.json"))
+_CACHE_PATH = os.environ.get("UNTRAKKD_CACHE", os.path.join(_DATA_DIR, "venue_cache.json"))
+_EVENTS_PATH = os.environ.get("UNTRAKKD_EVENTS", os.path.join(_DATA_DIR, "events.json"))
+_PROFILE_PATH = os.environ.get("UNTRAKKD_PROFILE_CACHE", os.path.join(_DATA_DIR, "profile.json"))
 
 
 @dataclass
@@ -116,10 +118,20 @@ class VenueCache:
         return Venue(name=name, city=city, lat=float(m.group(1)), lng=float(m.group(2)))
 
 
+def fetch_profile(session: _SyncSessionLogic) -> dict:
+    """Fetch display name from the user's profile page."""
+    page = session.get(f"{UNTAPPD_BASE}/user/{PROFILE}")
+    name = page.css("h1::text").get("").strip()
+    if not name:
+        m = _NAME_RE.search(page.html_content)
+        name = m.group(1).strip() if m else PROFILE
+    return {"username": PROFILE, "display_name": name}
+
+
 def fetch_checkins(session: _SyncSessionLogic) -> list[Checkin]:
     seen: set[int] = set()
     checkins: list[Checkin] = []
-    page = session.get(f"{UNTAPPD_BASE}/user/{USER}/checkins")
+    page = session.get(f"{UNTAPPD_BASE}/user/{PROFILE}/checkins")
     items = [i for i in page.css("div.item") if i.attrib.get("data-checkin-id")]
     for item in items:
         cid = int(item.attrib["data-checkin-id"])
@@ -131,9 +143,9 @@ def fetch_checkins(session: _SyncSessionLogic) -> list[Checkin]:
     offset = min(int(i.attrib["data-checkin-id"]) for i in items)
     while True:
         page = session.get(
-            f"{UNTAPPD_BASE}/profile/more_feed/{USER}/{offset}",
+            f"{UNTAPPD_BASE}/profile/more_feed/{PROFILE}/{offset}",
             params={"v2": "true"},
-            headers={"Referer": f"{UNTAPPD_BASE}/user/{USER}/checkins", "X-Requested-With": "XMLHttpRequest"},
+            headers={"Referer": f"{UNTAPPD_BASE}/user/{PROFILE}/checkins", "X-Requested-With": "XMLHttpRequest"},
         )
         items = [i for i in page.css("div.item") if i.attrib.get("data-checkin-id")]
         if not items:
@@ -154,8 +166,13 @@ def fetch_checkins(session: _SyncSessionLogic) -> list[Checkin]:
 
 
 def main() -> None:
+    if not PROFILE:
+        raise SystemExit("UNTAPPD_PROFILE env var is required")
     cookie = os.environ["UNTAPPD_COOKIE"]
     with FetcherSession(impersonate="chrome", timeout=30, retries=3, headers={"Cookie": cookie}) as session:
+        profile = fetch_profile(session)
+        with open(_PROFILE_PATH, "w") as f:
+            json.dump(profile, f, indent=2)
         checkins = fetch_checkins(session)
         cache = VenueCache(_CACHE_PATH)
         events = []

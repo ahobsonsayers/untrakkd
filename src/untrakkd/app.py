@@ -11,11 +11,11 @@ from starlette.requests import Request
 
 from .scraper import main as scrape
 
-log = logging.getLogger("***tracker")
+log = logging.getLogger("untrakkd")
 
-_FETCH_INTERVAL = int(os.environ.get("***_FETCH_INTERVAL", "3600"))
+_FETCH_INTERVAL = int(os.environ.get("UNTRAKKD_FETCH_INTERVAL", "3600"))
 
-app = FastAPI(title="***tracker")
+app = FastAPI(title="untrakkd")
 
 
 def _run_fetch() -> None:
@@ -39,7 +39,9 @@ def _start_fetch_loop() -> None:
     thread.start()
 
 
-_EVENTS_PATH = os.environ.get("***_EVENTS", os.path.join("data", "events.json"))
+_DATA_DIR = os.environ.get("UNTRAKKD_DATA", os.path.join("data", ""))
+_EVENTS_PATH = os.environ.get("UNTRAKKD_EVENTS", os.path.join(_DATA_DIR, "events.json"))
+_PROFILE_PATH = os.environ.get("UNTRAKKD_PROFILE_CACHE", os.path.join(_DATA_DIR, "profile.json"))
 templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 
 
@@ -49,6 +51,14 @@ def load_events() -> list[dict]:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return []
+
+
+def load_profile() -> dict:
+    try:
+        with open(_PROFILE_PATH) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {"display_name": "", "username": ""}
 
 
 @app.get("/health")
@@ -66,5 +76,9 @@ def index(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"request": request, "events": json.dumps(load_events())},
+        context={
+            "request": request,
+            "events": json.dumps(load_events()),
+            "profile": json.dumps(load_profile()),
+        },
     )

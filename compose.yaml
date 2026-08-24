@@ -1,11 +1,12 @@
 services:
-  ***tracker:
-    container_name: ***tracker
-    image: ahobsonsayers/***tracker
+  untrakkd:
+    container_name: untrakkd
+    image: ahobsonsayers/untrakkd
     restart: unless-stopped
     ports:
       - 8000:8000
     environment:
       UNTAPPD_COOKIE: ${UNTAPPD_COOKIE:-}
+      UNTAPPD_PROFILE: ${UNTAPPD_PROFILE:-}
     volumes:
       - ./data:/app/data

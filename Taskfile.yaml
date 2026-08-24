@@ -25,19 +25,19 @@ tasks:
 
   run:
     cmds:
-      - uv run ***tracker {{.CLI_ARGS}}
+      - uv run untrakkd {{.CLI_ARGS}}
 
   run:fetch:
     cmds:
-      - uv run ***tracker fetch
+      - uv run untrakkd fetch
 
   run:server:
     cmds:
-      - uv run ***tracker serve {{.CLI_ARGS}}
+      - uv run untrakkd serve {{.CLI_ARGS}}
 
   docker:build:
     cmds:
-      - docker build . --tag ***tracker
+      - docker build . --tag untrakkd
 
   docker:run:
     cmds:

@@ -17,5 +17,5 @@ jobs:
     secrets: inherit
     with:
       image-registry: ghcr.io
-      image-name: ahobsonsayers/***tracker
+      image-name: ahobsonsayers/untrakkd
       image-tags: latest

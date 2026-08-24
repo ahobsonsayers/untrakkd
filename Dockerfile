@@ -33,4 +33,4 @@ COPY --from=builder /app/.venv /app/.venv
 
 EXPOSE 8000
 
-CMD ["***tracker", "serve", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["untrakkd", "serve", "--host", "0.0.0.0", "--port", "8000"]

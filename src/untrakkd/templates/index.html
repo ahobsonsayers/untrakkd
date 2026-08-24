@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>***'s beer world tour</title>
+  <title>Untrakkd</title>
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <style>
@@ -75,7 +75,7 @@
   <div id="map"></div>
   <div id="sidebar">
     <div id="header">
-      <h1><span class="beer-emoji">🍺</span> *** Tracker</h1>
+      <h1><span class="beer-emoji">🍺</span> Untrakkd</h1>
       <p id="count"></p>
       <div class="stats-grid" id="stats"></div>
     </div>
@@ -83,6 +83,8 @@
   </div>
   <script>
     const EVENTS = {{ events | safe }};
+    const PROFILE = {{ profile | safe }};
+    const displayName = PROFILE.display_name || PROFILE.username || 'Unknown';
 
     function renderStars(rating) {
       if (rating == null || rating <= 0) return '';
@@ -213,7 +215,7 @@
 
     // Timeline
     const tl = document.getElementById('timeline');
-    document.getElementById('count').innerHTML = `<span class="stat-num">${EVENTS.length}</span> check-ins across <span class="stat-num">${places.size}</span> places`;
+    document.getElementById('count').innerHTML = `<span class="stat-num">${EVENTS.length}</span> check-ins by ${displayName} across <span class="stat-num">${places.size}</span> places`;
     const items = [];
     for (const e of sorted) {
       const div = document.createElement('div');
