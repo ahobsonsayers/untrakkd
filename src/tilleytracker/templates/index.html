@@ -46,6 +46,11 @@
     .stars { color: var(--accent); letter-spacing: 2px; font-size: 0.9rem; text-shadow: 0 0 8px var(--accent-glow); }
     .stars .empty { color: var(--border); text-shadow: none; }
     .rating-num { font-size: 0.72rem; color: var(--text-dim); font-weight: 600; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+    .stat-card .stat-label { font-size: 0.65rem; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+    .stat-card .stat-value { font-size: 0.85rem; color: var(--text); font-weight: 600; margin-top: 2px; }
+    .stat-card .stat-value .accent { color: var(--accent); }
     /* Dark popups */
     .maplibregl-popup-content { background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
     .maplibregl-popup-tip { border-top-color: var(--card) !important; border-bottom-color: var(--card) !important; }
@@ -70,8 +75,9 @@
   <div id="map"></div>
   <div id="sidebar">
     <div id="header">
-      <h1><span class="beer-emoji">🍺</span> ***'s beer world tour</h1>
+      <h1><span class="beer-emoji">🍺</span> *** Tracker</h1>
       <p id="count"></p>
+      <div class="stats-grid" id="stats"></div>
     </div>
     <div id="timeline"></div>
   </div>
@@ -112,6 +118,32 @@
     const chrono = [...sorted].reverse();
     const withCoords = chrono.filter(e => e.lat != null && e.lng != null);
     const places = new Set(sorted.map(e => e.venue + '|' + e.lat + ',' + e.lng));
+
+    // Key stats
+    (function() {
+      const rated = sorted.filter(e => e.rating != null && e.rating > 0);
+      const avgRating = rated.length ? (rated.reduce((s, e) => s + e.rating, 0) / rated.length) : 0;
+
+      const venueCount = {};
+      const locCount = {};
+      for (const e of sorted) {
+        if (e.venue) venueCount[e.venue] = (venueCount[e.venue] || 0) + 1;
+        const loc = e.city || 'Unknown';
+        locCount[loc] = (locCount[loc] || 0) + 1;
+      }
+      const topVenue = Object.entries(venueCount).sort((a, b) => b[1] - a[1])[0] || ['\u2014', 0];
+      const topLoc = Object.entries(locCount).sort((a, b) => b[1] - a[1])[0] || ['\u2014', 0];
+
+      const dates = sorted.map(e => new Date(e.date));
+      const spanDays = Math.max(1, (dates[0] - dates[dates.length - 1]) / 86400000);
+      const perWeek = (sorted.length / (spanDays / 7));
+
+      document.getElementById('stats').innerHTML =
+        `<div class="stat-card"><div class="stat-label">Drinks / Week</div><div class="stat-value"><span class="accent">${perWeek.toFixed(1)}</span></div></div>` +
+        `<div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value"><span class="accent">${avgRating.toFixed(2)}</span>\u2605</div></div>` +
+        `<div class="stat-card"><div class="stat-label">Top Venue</div><div class="stat-value">${topVenue[0]} <span class="accent">(${topVenue[1]})</span></div></div>` +
+        `<div class="stat-card"><div class="stat-label">Top Location</div><div class="stat-value">${topLoc[0]} <span class="accent">(${topLoc[1]})</span></div></div>`;
+    })();
 
     map.on('load', () => {
       const features = withCoords.map(e => ({
