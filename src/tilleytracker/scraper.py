@@ -117,19 +117,39 @@ class VenueCache:
 
 
 def fetch_checkins(session: _SyncSessionLogic) -> list[Checkin]:
+    seen: set[int] = set()
     checkins: list[Checkin] = []
-    params: dict[str, str] = {}
-    for _ in range(MAX_PAGES):
-        page = session.get(f"{UNTAPPD_BASE}/user/{USER}/checkins", params=params)
+    page = session.get(f"{UNTAPPD_BASE}/user/{USER}/checkins")
+    items = [i for i in page.css("div.item") if i.attrib.get("data-checkin-id")]
+    for item in items:
+        cid = int(item.attrib["data-checkin-id"])
+        if cid not in seen:
+            seen.add(cid)
+            checkins.append(parse_item(item))
+    if not items:
+        return checkins
+    offset = min(int(i.attrib["data-checkin-id"]) for i in items)
+    while True:
+        page = session.get(
+            f"{UNTAPPD_BASE}/profile/more_feed/{USER}/{offset}",
+            params={"v2": "true"},
+            headers={"Referer": f"{UNTAPPD_BASE}/user/{USER}/checkins", "X-Requested-With": "XMLHttpRequest"},
+        )
         items = [i for i in page.css("div.item") if i.attrib.get("data-checkin-id")]
         if not items:
             break
+        new = 0
         for item in items:
-            checkins.append(parse_item(item))
-        if len(items) < PER_PAGE:
+            cid = int(item.attrib["data-checkin-id"])
+            if cid not in seen:
+                seen.add(cid)
+                checkins.append(parse_item(item))
+                new += 1
+        if new == 0:
             break
-        ids = [int(i.attrib["data-checkin-id"]) for i in items]
-        params["max_id"] = str(min(ids))
+        offset = min(int(i.attrib["data-checkin-id"]) for i in items)
+        if len(checkins) >= MAX_PAGES * PER_PAGE:
+            break
     return checkins
 
 
