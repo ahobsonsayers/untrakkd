@@ -31,6 +31,7 @@ class Checkin:
     brewery: str
     venue_key: str  # "slug/id" from /v/ href
     date: datetime
+    rating: float | None
 
     def as_dict(self, venue: Venue | None) -> dict:
         return {
@@ -41,6 +42,7 @@ class Checkin:
             "lat": venue.lat if venue else None,
             "lng": venue.lng if venue else None,
             "date": self.date.isoformat(),
+            "rating": self.rating,
         }
 
 
@@ -66,11 +68,13 @@ def parse_item(item) -> Checkin:
         venue_href = a.attrib.get("href", "")
         break
     date_raw = item.css("a.time::text").get("")
+    rating_raw = item.css("div.caps::attr(data-rating)").get("")
     return Checkin(
         beer=beer,
         brewery=brewery,
         venue_key=venue_href.split("/v/", 1)[1] if venue_href else "",
         date=parse_item_datetime(date_raw),
+        rating=float(rating_raw) if rating_raw else None,
     )
 
 

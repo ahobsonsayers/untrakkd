@@ -22,6 +22,9 @@
     .beer { font-weight: 600; }
     .meta { font-size: 0.8rem; color: #aaa; }
     .badge { display: inline-block; margin-top: 6px; font-size: 0.7rem; color: #e65100; }
+    .stars { color: #e65100; letter-spacing: 1px; font-size: 0.85rem; }
+    .stars .empty { color: #444; }
+    .rating-num { font-size: 0.75rem; color: #aaa; }
     /* Mobile: map on top, timeline scrolls below it */
     @media (max-width: 700px) {
       body { flex-direction: column; }
@@ -44,6 +47,21 @@
   </div>
   <script>
     const EVENTS = {{ events | safe }};
+
+    function renderStars(rating) {
+      if (rating == null || rating <= 0) return '';
+      const full = Math.floor(rating);
+      const half = rating - full >= 0.25 && rating - full < 0.75 ? 1 : 0;
+      const roundUp = rating - full >= 0.75 ? 1 : 0;
+      const filled = full + roundUp;
+      const total = 5;
+      let stars = '';
+      for (let i = 0; i < total; i++) {
+        stars += i < filled ? '\u2605' : '<span class="empty">\u2606</span>';
+      }
+      return `<span class="stars">${stars}</span> <span class="rating-num">${rating.toFixed(2)}</span>`;
+    }
+
     const map = new maplibregl.Map({
       container: 'map',
       style: 'https://demotiles.maplibre.org/style.json',
@@ -51,34 +69,28 @@
       zoom: 1.5
     });
 
-    // Unique venues with coords
-    const venues = new Map();
-    for (const e of EVENTS) {
-      if (e.lat != null && e.lng != null) {
-        const key = e.venue + '|' + e.lat + ',' + e.lng;
-        if (!venues.has(key)) venues.set(key, e);
-      }
-    }
-
     const sorted = [...EVENTS].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const withCoords = sorted.filter(e => e.lat != null && e.lng != null);
+    const places = new Set(sorted.map(e => e.venue + '|' + e.lat + ',' + e.lng));
 
     map.on('load', () => {
-      const features = [...venues.values()].map(e => ({
+      const features = withCoords.map(e => ({
         type: 'Feature',
         properties: { venue: e.venue || 'Unknown', beer: e.beer, brewery: e.brewery, city: e.city, date: e.date },
         geometry: { type: 'Point', coordinates: [e.lng, e.lat] }
       }));
-      map.addSource('venues', { type: 'geojson', data: { type: 'FeatureCollection', features } });
+      map.addSource('checkins', { type: 'geojson', data: { type: 'FeatureCollection', features } });
       map.addLayer({
-        id: 'pins', type: 'circle', source: 'venues',
+        id: 'pins', type: 'circle', source: 'checkins',
         paint: { 'circle-radius': 7, 'circle-color': '#e65100', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 }
       });
     });
 
     map.on('click', 'pins', (e) => {
       const p = e.features[0].properties;
+      const r = p.rating != null && p.rating > 0 ? `<br>${renderStars(parseFloat(p.rating))}` : '';
       new maplibregl.Popup().setLngLat(e.lngLat)
-        .setHTML(`<strong>${p.venue}</strong><br>${p.beer} by ${p.brewery}<br>${p.city ? p.city + '<br>' : ''}${p.date}`)
+        .setHTML(`<strong>${p.venue}</strong><br>${p.beer} by ${p.brewery}${r}<br>${p.city ? p.city + '<br>' : ''}${p.date}`)
         .addTo(map);
     });
 
@@ -87,7 +99,7 @@
 
     // Timeline
     const tl = document.getElementById('timeline');
-    document.getElementById('count').textContent = `${EVENTS.length} checkins across ${venues.size} places`;
+    document.getElementById('count').textContent = `${EVENTS.length} checkins across ${places.size} places`;
     const items = [];
     for (const e of sorted) {
       const d = new Date(e.date);
@@ -96,9 +108,10 @@
       const place = e.venue || (e.city ? e.city : 'Somewhere');
       div.innerHTML = `<div class="beer">${e.beer}</div>
         <div class="brew">by ${e.brewery}</div>
+        ${renderStars(e.rating)}
         <div class="brew">${e.venue || '—'}</div>
         <div class="meta">${d.toLocaleDateString()} ${e.city || ''}</div>
-        ${e.lat != null && e.lng != null ? `<span class="badge">📍 ${place}</span>` : ''}`;
+        ${e.lat != null && e.lng != null ? `<span class="badge">\ud83d\udccd ${place}</span>` : ''}`;
       if (e.lat != null && e.lng != null) {
         div.onclick = () => flyToVenue(e, div);
       }
@@ -112,9 +125,10 @@
       map.flyTo({ center: [e.lng, e.lat], zoom: 10 });
       setActive(el);
       if (popup) popup.remove();
+      const r = e.rating != null && e.rating > 0 ? `<br>${renderStars(e.rating)}` : '';
       popup = new maplibregl.Popup({ closeButton: false, offset: 12 })
         .setLngLat([e.lng, e.lat])
-        .setHTML(`<strong>${e.venue || e.city || 'Somewhere'}</strong><br>${e.beer} by ${e.brewery}<br>${e.date}`)
+        .setHTML(`<strong>${e.venue || e.city || 'Somewhere'}</strong><br>${e.beer} by ${e.brewery}${r}<br>${e.date}`)
         .addTo(map);
     }
 
@@ -137,7 +151,7 @@
       if (current) {
         const key = current.e.lat + ',' + current.e.lng;
         setActive(current.div);
-        if (key !== lastKey) {
+        if (key !== lastKey && current.e.lat != null && current.e.lng != null) {
           lastKey = key;
           map.flyTo({ center: [current.e.lng, current.e.lat], zoom: 9 });
         }
