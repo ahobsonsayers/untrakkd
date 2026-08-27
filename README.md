@@ -51,7 +51,7 @@ You also need the target user's username slug — the part after `/user/` in the
 ```bash
 export UNTAPPD_COOKIE="..."
 export UNTAPPD_PROFILE="username"
-task run:docker
+task docker:run
 ```
 
 Then open http://localhost:8000.
