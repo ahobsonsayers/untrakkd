@@ -17,11 +17,21 @@ Built with [FastAPI](https://fastapi.tiangolo.com/), [Scrapling](https://github.
 
 ## How it works
 
-1. `untrakkd fetch` scrapes a user's full check-in history from Untappd using cookies you supply, paginating through all available check-ins via the `more_feed` endpoint.
-2. The user's display name is fetched from their profile page and saved to `data/profile.json`.
-3. For each unique venue it visits the venue page to grab coordinates and city from the (public) Google Maps link and `<title>` tag, cached on disk.
-4. Everything is written to `data/events.json`.
-5. `untrakkd serve` runs a FastAPI server that renders the data as MapLibre pins plus a timeline sidebar.
+1. `untrakkd fetch` scrapes a user's check-in history from Untappd using cookies you supply, paginating through the activity feed via the `more_feed` endpoint.
+2. The profile page is fetched to get the display name, total check-in count, and whether the target user is you or a friend.
+3. If the activity feed returns fewer check-ins than the profile reports:
+   - If the target is **you** (logged-in user) or a **friend**, the scraper visits the user's Places page (`/user/{name}/venues`) to find all venues with a check-in count that doesn't match what the activity feed already collected.
+   - For each mismatched venue, it paginates the venue's activity feed filtered to **"You"** (if scraping yourself) or **"Friends"** (if scraping a friend). This recovers check-ins that the activity feed capped.
+   - The friends filter works because it shows only friends' check-ins at that venue — much lower volume than the "all users" feed, so it pages further back.
+4. If any venue still shows fewer check-ins than expected after the sweep, `history_incomplete` is set in `data/profile.json` and the UI shows "Full check-in history could not be fetched" at the bottom of the timeline.
+5. If the target is neither you nor a friend, the venue fallback is skipped entirely and the incomplete notice shows if the activity feed was short.
+6. For each unique venue, the venue page is visited to grab coordinates and city, cached on disk.
+7. Everything is written to `data/events.json`.
+8. `untrakkd serve` runs a FastAPI server that renders the data as MapLibre pins plus a timeline sidebar.
+
+### Why the venue fallback is needed
+
+Untappd caps the activity feed (`more_feed` endpoint) for other users' profiles. For your own account it pages fully, but for anyone else it stops after a few hundred check-ins. The venue fallback recovers the rest by paginating each venue's friends-filtered feed, which has far lower volume. It may not recover everything — check-ins at high-traffic venues before a friendship started won't appear in the friends feed. Those gaps trigger the incomplete notice.
 
 ## Getting your Untappd cookie
 
