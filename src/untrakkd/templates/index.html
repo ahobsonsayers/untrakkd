@@ -168,14 +168,9 @@
       }
       map.addSource('routes', { type: 'geojson', data: { type: 'FeatureCollection', features: lineFeatures } });
       map.addLayer({
-        id: 'route-outline', type: 'line', source: 'routes',
-        layout: { 'line-cap': 'round' },
-        paint: { 'line-color': '#000', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 3, 10, 7, 15, 12], 'line-dasharray': [0, 2], 'line-opacity': 0.5 }
-      });
-      map.addLayer({
         id: 'route-line', type: 'line', source: 'routes',
         layout: { 'line-cap': 'round' },
-        paint: { 'line-color': '#f59000', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 2, 10, 5, 15, 9], 'line-dasharray': [0, 2], 'line-opacity': 0.8 }
+        paint: { 'line-color': '#f59000', 'line-outline-color': '#000', 'line-outline-width': 1, 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 2, 10, 5, 15, 9], 'line-dasharray': [0, 2], 'line-opacity': 1 }
       });
 
       // Chevron at midpoint of each segment
