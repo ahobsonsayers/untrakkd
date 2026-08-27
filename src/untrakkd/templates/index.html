@@ -170,7 +170,7 @@
       map.addLayer({
         id: 'route-line', type: 'line', source: 'routes',
         layout: { 'line-cap': 'round' },
-        paint: { 'line-color': '#4b4b4b', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 2, 10, 4, 15, 4], 'line-dasharray': [0, 2], 'line-opacity': 1 }
+        paint: { 'line-color': '#4b4b4b', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 2, 10, 2, 15, 2], 'line-dasharray': [0, 2], 'line-opacity': 1 }
       });
 
       // Glow halo under pins
@@ -271,7 +271,7 @@
     let lastKey = null;
     let suppressScrollFly = false;
     tl.addEventListener('scroll', () => {
-      const mid = tl.scrollTop + tl.clientHeight * 0.4;
+      const mid = tl.scrollTop;
       let current = null;
       for (const item of items) {
         if (item.div.offsetTop <= mid) current = item;
