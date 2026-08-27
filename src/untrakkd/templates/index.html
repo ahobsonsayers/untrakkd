@@ -190,16 +190,16 @@
       // Glow halo under pins
       map.addLayer({
         id: 'pin-glow', type: 'circle', source: 'checkins',
-        paint: { 'circle-radius': 16, 'circle-color': '#3b82f6', 'circle-opacity': 0.15, 'circle-blur': 1 }
+        paint: { 'circle-radius': 16, 'circle-color': '#22c55e', 'circle-opacity': 0.15, 'circle-blur': 1 }
       });
       map.addLayer({
         id: 'pins', type: 'circle', source: 'checkins',
-        paint: { 'circle-radius': 6, 'circle-color': '#3b82f6', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 }
+        paint: { 'circle-radius': 6, 'circle-color': '#22c55e', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 }
       });
       map.addLayer({
         id: 'active-pin', type: 'circle', source: 'checkins',
         filter: ['==', ['get', 'idx'], -1],
-        paint: { 'circle-radius': 10, 'circle-color': '#22c55e', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2.5, 'circle-blur': 0.2 }
+        paint: { 'circle-radius': 10, 'circle-color': '#f59000', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2.5, 'circle-blur': 0.2 }
       });
     });
 
