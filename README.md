@@ -33,6 +33,8 @@ Built with [FastAPI](https://fastapi.tiangolo.com/), [Scrapling](https://github.
 
 Untappd caps the activity feed (`more_feed` endpoint) for other users' profiles. For your own account it pages fully, but for anyone else it stops after a few hundred check-ins. The venue fallback recovers the rest by paginating each venue's friends-filtered feed, which has far lower volume. It may not recover everything — check-ins at high-traffic venues before a friendship started won't appear in the friends feed. Those gaps trigger the incomplete notice.
 
+If you're not friends with the target user, the venue fallback is unavailable — you'll only get the check-ins the activity feed returns (capped at a few hundred recent ones). Add the user as a friend on Untappd to enable full history recovery.
+
 ## Getting your Untappd cookie
 
 You need a cookie from a logged-in Untappd session — the scraper uses it to access the check-in feed (which requires authentication).
