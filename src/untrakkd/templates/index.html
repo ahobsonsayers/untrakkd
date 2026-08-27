@@ -168,9 +168,14 @@
       }
       map.addSource('routes', { type: 'geojson', data: { type: 'FeatureCollection', features: lineFeatures } });
       map.addLayer({
+        id: 'route-outline', type: 'line', source: 'routes',
+        layout: { 'line-cap': 'round' },
+        paint: { 'line-color': '#000', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 3, 10, 7, 15, 12], 'line-opacity': 0.5 }
+      });
+      map.addLayer({
         id: 'route-line', type: 'line', source: 'routes',
         layout: { 'line-cap': 'round' },
-        paint: { 'line-color': '#f59000', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 2, 10, 6, 15, 12], 'line-dasharray': [0, 2], 'line-opacity': 0.8 }
+        paint: { 'line-color': '#f59000', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 2, 10, 5, 15, 9], 'line-dasharray': [0, 2], 'line-opacity': 0.8 }
       });
 
       // Chevron at midpoint of each segment
@@ -194,12 +199,12 @@
       });
       map.addLayer({
         id: 'pins', type: 'circle', source: 'checkins',
-        paint: { 'circle-radius': 6, 'circle-color': '#f59000', 'circle-stroke-color': '#000', 'circle-stroke-width': 1.5 }
+        paint: { 'circle-radius': 6, 'circle-color': '#f59000', 'circle-stroke-color': '#000', 'circle-stroke-width': 1 }
       });
       map.addLayer({
         id: 'active-pin', type: 'circle', source: 'checkins',
         filter: ['==', ['get', 'idx'], -1],
-        paint: { 'circle-radius': 10, 'circle-color': '#22c55e', 'circle-stroke-color': '#000', 'circle-stroke-width': 2, 'circle-blur': 0.2 }
+        paint: { 'circle-radius': 10, 'circle-color': '#22c55e', 'circle-stroke-color': '#000', 'circle-stroke-width': 1.5, 'circle-blur': 0.2 }
       });
     });
 
