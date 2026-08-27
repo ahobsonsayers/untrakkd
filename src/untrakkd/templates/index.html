@@ -271,10 +271,10 @@
     let lastKey = null;
     let suppressScrollFly = false;
     tl.addEventListener('scroll', () => {
-      const mid = tl.scrollTop;
+      const tlTop = tl.getBoundingClientRect().top;
       let current = null;
       for (const item of items) {
-        if (item.div.offsetTop <= mid) current = item;
+        if (item.div.getBoundingClientRect().top <= tlTop) current = item;
         else break;
       }
       if (current) {
