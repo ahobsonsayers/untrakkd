@@ -170,7 +170,7 @@
       map.addLayer({
         id: 'route-outline', type: 'line', source: 'routes',
         layout: { 'line-cap': 'round' },
-        paint: { 'line-color': '#000', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 3, 10, 7, 15, 12], 'line-opacity': 0.5 }
+        paint: { 'line-color': '#000', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 3, 10, 7, 15, 12], 'line-dasharray': [0, 2], 'line-opacity': 0.5 }
       });
       map.addLayer({
         id: 'route-line', type: 'line', source: 'routes',
