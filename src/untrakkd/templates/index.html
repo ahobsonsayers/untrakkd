@@ -258,7 +258,7 @@
     // Shared popup
     let popup = null;
     function flyToVenue(e, el) {
-      map.flyTo({ center: [e.lng, e.lat], zoom: 10, speed: 1.8, curve: 1.2, duration: 2500 });
+      map.flyTo({ center: [e.lng, e.lat], zoom: 13, speed: 1.8, curve: 1.2, duration: 2500 });
       setActive(el);
       highlightPin(e);
       if (popup) popup.remove();
