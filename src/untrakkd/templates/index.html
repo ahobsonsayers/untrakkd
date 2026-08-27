@@ -170,7 +170,7 @@
       map.addLayer({
         id: 'route-line', type: 'line', source: 'routes',
         layout: { 'line-cap': 'round' },
-        paint: { 'line-color': '#22c55e', 'line-width': 4, 'line-dasharray': [0, 4], 'line-opacity': 0.8 }
+        paint: { 'line-color': '#f59000', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 2, 10, 4, 15, 8], 'line-dasharray': [0, 4], 'line-opacity': 0.8 }
       });
 
       // Chevron at midpoint of each segment
@@ -184,22 +184,22 @@
       map.addLayer({
         id: 'chevrons', type: 'symbol', source: 'chevrons',
         layout: { 'text-field': '\u27A4', 'text-size': 14, 'text-rotate': ['get', 'bearing'], 'text-rotate-alignment': 'map', 'text-allow-overlap': true },
-        paint: { 'text-color': '#22c55e', 'text-opacity': 0.9 }
+        paint: { 'text-color': '#f59000', 'text-opacity': 0.9 }
       });
 
       // Glow halo under pins
       map.addLayer({
         id: 'pin-glow', type: 'circle', source: 'checkins',
-        paint: { 'circle-radius': 16, 'circle-color': '#22c55e', 'circle-opacity': 0.15, 'circle-blur': 1 }
+        paint: { 'circle-radius': 16, 'circle-color': '#f59000', 'circle-opacity': 0.15, 'circle-blur': 1 }
       });
       map.addLayer({
         id: 'pins', type: 'circle', source: 'checkins',
-        paint: { 'circle-radius': 6, 'circle-color': '#22c55e', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2 }
+        paint: { 'circle-radius': 6, 'circle-color': '#f59000', 'circle-stroke-color': '#000', 'circle-stroke-width': 1.5 }
       });
       map.addLayer({
         id: 'active-pin', type: 'circle', source: 'checkins',
         filter: ['==', ['get', 'idx'], -1],
-        paint: { 'circle-radius': 10, 'circle-color': '#f59000', 'circle-stroke-color': '#fff', 'circle-stroke-width': 2.5, 'circle-blur': 0.2 }
+        paint: { 'circle-radius': 10, 'circle-color': '#22c55e', 'circle-stroke-color': '#000', 'circle-stroke-width': 2, 'circle-blur': 0.2 }
       });
     });
 
