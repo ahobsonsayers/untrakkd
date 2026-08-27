@@ -173,20 +173,6 @@
         paint: { 'line-color': '#4b4b4b', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 2, 10, 5, 15, 6], 'line-dasharray': [0, 2], 'line-opacity': 1 }
       });
 
-      // Chevron at midpoint of each segment
-      const chevronFeatures = lineFeatures.map(f => {
-        const [a, b] = f.geometry.coordinates;
-        const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
-        const bearing = Math.atan2(b[0] - a[0], b[1] - a[1]) * 180 / Math.PI;
-        return { type: 'Feature', properties: { bearing: bearing - 90 }, geometry: { type: 'Point', coordinates: [mx, my] } };
-      });
-      map.addSource('chevrons', { type: 'geojson', data: { type: 'FeatureCollection', features: chevronFeatures } });
-      map.addLayer({
-        id: 'chevrons', type: 'symbol', source: 'chevrons',
-        layout: { 'text-field': '\u27A4', 'text-size': 14, 'text-rotate': ['get', 'bearing'], 'text-rotate-alignment': 'map', 'text-allow-overlap': true },
-        paint: { 'text-color': '#f59000', 'text-opacity': 0.9 }
-      });
-
       // Glow halo under pins
       map.addLayer({
         id: 'pin-glow', type: 'circle', source: 'checkins',
