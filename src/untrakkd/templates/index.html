@@ -120,6 +120,7 @@
     const sorted = [...EVENTS].sort((a, b) => new Date(b.date) - new Date(a.date));
     const chrono = [...sorted].reverse();
     const withCoords = chrono.filter(e => e.lat != null && e.lng != null);
+    const withVenue = sorted.filter(e => e.venue);
     const places = new Set(sorted.map(e => e.venue + '|' + e.lat + ',' + e.lng));
 
     // Key stats
@@ -214,6 +215,7 @@
     document.getElementById('count').innerHTML = `<span class="stat-num">${EVENTS.length}</span> check-ins by ${displayName} across <span class="stat-num">${places.size}</span> places`;
     const items = [];
     for (const e of sorted) {
+      if (!e.venue) continue;
       const div = document.createElement('div');
       div.className = 'event';
       const loc = e.city || 'Somewhere';
@@ -229,11 +231,19 @@
       tl.appendChild(div);
     }
 
-    if (PROFILE.history_incomplete) {
-      const notice = document.createElement('div');
-      notice.className = 'incomplete-notice';
-      notice.textContent = 'Full check-in history could not be fetched';
-      tl.appendChild(notice);
+    {
+      const total = PROFILE.total_checkins || EVENTS.length;
+      const notFetched = Math.max(0, total - EVENTS.length);
+      const skipped = EVENTS.length - withVenue.length;
+      const parts = [];
+      if (skipped > 0) parts.push(`${skipped} check-ins without venues skipped`);
+      if (notFetched > 0) parts.push(`${notFetched} check-ins could not be fetched`);
+      if (parts.length) {
+        const notice = document.createElement('div');
+        notice.className = 'incomplete-notice';
+        notice.textContent = parts.join(' | ');
+        tl.appendChild(notice);
+      }
     }
 
     // Shared popup
