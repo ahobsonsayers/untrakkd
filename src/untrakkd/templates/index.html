@@ -168,14 +168,9 @@
       }
       map.addSource('routes', { type: 'geojson', data: { type: 'FeatureCollection', features: lineFeatures } });
       map.addLayer({
-        id: 'route-outline', type: 'line', source: 'routes',
-        layout: { 'line-cap': 'round' },
-        paint: { 'line-color': '#000', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 3, 10, 7, 15, 12], 'line-dasharray': [0, 2], 'line-opacity': 1 }
-      });
-      map.addLayer({
         id: 'route-line', type: 'line', source: 'routes',
         layout: { 'line-cap': 'round' },
-        paint: { 'line-color': '#f59000', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 2, 10, 5, 15, 9], 'line-dasharray': [0, 2], 'line-opacity': 1 }
+        paint: { 'line-color': '#4b4b4b', 'line-width': ['interpolate', ['linear'], ['zoom'], 0, 2, 10, 5, 15, 6], 'line-dasharray': [0, 2], 'line-opacity': 1 }
       });
 
       // Chevron at midpoint of each segment
@@ -189,17 +184,17 @@
       map.addLayer({
         id: 'chevrons', type: 'symbol', source: 'chevrons',
         layout: { 'text-field': '\u27A4', 'text-size': 14, 'text-rotate': ['get', 'bearing'], 'text-rotate-alignment': 'map', 'text-allow-overlap': true },
-        paint: { 'text-color': '#f59000', 'text-opacity': 0.9 }
+        paint: { 'text-color': '#4b4b4b', 'text-opacity': 0.9 }
       });
 
       // Glow halo under pins
       map.addLayer({
         id: 'pin-glow', type: 'circle', source: 'checkins',
-        paint: { 'circle-radius': 16, 'circle-color': '#f59000', 'circle-opacity': 0.15, 'circle-blur': 1 }
+        paint: { 'circle-radius': 16, 'circle-color': '#4b4b4b', 'circle-opacity': 0.15, 'circle-blur': 1 }
       });
       map.addLayer({
         id: 'pins', type: 'circle', source: 'checkins',
-        paint: { 'circle-radius': 6, 'circle-color': '#f59000', 'circle-stroke-color': '#000', 'circle-stroke-width': 1 }
+        paint: { 'circle-radius': 6, 'circle-color': '#4b4b4b', 'circle-stroke-color': '#000', 'circle-stroke-width': 1 }
       });
       map.addLayer({
         id: 'active-pin', type: 'circle', source: 'checkins',
