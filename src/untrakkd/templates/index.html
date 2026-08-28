@@ -122,7 +122,7 @@
     const chrono = [...sorted].reverse();
     const withCoords = chrono.filter(e => e.lat != null && e.lng != null);
     const withVenue = sorted.filter(e => e.venue);
-    const places = new Set(sorted.map(e => e.venue + '|' + e.lat + ',' + e.lng));
+    const places = new Set(withVenue.map(e => e.venue + '|' + e.lat + ',' + e.lng));
 
     // Key stats
     (function() {
@@ -213,7 +213,7 @@
 
     // Timeline
     const tl = document.getElementById('timeline');
-    document.getElementById('count').innerHTML = `<span class="stat-num">${EVENTS.length}</span> check-ins by ${displayName} across <span class="stat-num">${places.size}</span> places`;
+    document.getElementById('count').innerHTML = `<span class="stat-num">${withVenue.length}</span> check-ins by ${displayName} across <span class="stat-num">${places.size}</span> places`;
     const items = [];
     for (const e of sorted) {
       if (!e.venue) continue;
@@ -234,8 +234,8 @@
 
     {
       const total = PROFILE.total_checkins || EVENTS.length;
-      const notFetched = Math.max(0, total - EVENTS.length);
-      const skipped = EVENTS.length - withVenue.length;
+      const notFetched = PROFILE.history_incomplete ? Math.max(0, total - EVENTS.length) : 0;
+      const skipped = (total - EVENTS.length) - notFetched + (EVENTS.length - withVenue.length);
       const parts = [];
       if (skipped > 0) parts.push(`${skipped} check-ins without venues skipped`);
       if (notFetched > 0) parts.push(`${notFetched} check-ins could not be fetched`);
