@@ -56,9 +56,13 @@ def load_events() -> list[dict]:
 def load_profile() -> dict:
     try:
         with open(_PROFILE_PATH) as f:
-            return json.load(f)
+            data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        return {"display_name": "", "username": ""}
+        data = {}
+    return {
+        "total_checkins": data.get("total_checkins", 0),
+        "history_incomplete": data.get("history_incomplete", False),
+    }
 
 
 @app.get("/health")

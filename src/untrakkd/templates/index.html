@@ -86,7 +86,6 @@
   <script>
     const EVENTS = {{ events | safe }};
     const PROFILE = {{ profile | safe }};
-    const displayName = PROFILE.display_name || PROFILE.username || 'Unknown';
 
     function renderStars(rating) {
       if (rating == null || rating <= 0) return '';
@@ -213,7 +212,7 @@
 
     // Timeline
     const tl = document.getElementById('timeline');
-    document.getElementById('count').innerHTML = `<span class="stat-num">${withVenue.length}</span> check-ins by ${displayName} across <span class="stat-num">${places.size}</span> places`;
+    document.getElementById('count').innerHTML = `<span class="stat-num">${withVenue.length}</span> check-ins across <span class="stat-num">${places.size}</span> places`;
     const items = [];
     for (const e of sorted) {
       if (!e.venue) continue;
